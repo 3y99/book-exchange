@@ -1,0 +1,2 @@
+﻿includes/config.php filter=stripsecret
+includes/config.php filter=stripsecret

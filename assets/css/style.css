@@ -2049,3 +2049,119 @@ body {
     color: #dc3545;
     margin-bottom: 1rem;
 }
+
+
+/* Cart count in header */
+.cart-link {
+    position: relative;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Cart form styles */
+.cart-form-inline {
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-available {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-sold {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.purchase-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto; /* Smaller image column */
+    gap: 1rem; /* Reduce gap */
+    padding: 1rem; /* Slightly smaller padding */
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    align-items: start;
+}
+
+.purchase-image {
+    width: 60px;   /* smaller width */
+    height: 80px;  /* smaller height */
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.purchase-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* Admin badge in chat */
+.admin-badge {
+    color: #dc3545;
+    margin-left: 5px;
+}
+
+/* Message status badges */
+.status-badge.status-read {
+    background: #28a745;
+    color: white;
+}
+
+.status-badge.status-unread {
+    background: #dc3545;
+    color: white;
+}
+
+/* Message cards */
+.message-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+.message-card.unread {
+    border-left: 4px solid #007bff;
+    background: #f8f9fa;
+}
+
+.badge-new {
+    background: #dc3545;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+}

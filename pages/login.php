@@ -31,15 +31,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user && password_verify($password, $user['password'])) {
-            // Login successful
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['is_admin'] = $user['is_admin'];
-            
-            // Always redirect to role selection after login
-            header('Location: role-selection.php');
-            exit();
+            // Check if user is banned
+            if ($user['is_banned']) {
+                $errors[] = "Your account has been banned. Please contact support.";
+            } else {
+                // Login successful
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['is_admin'] = $user['is_admin'];
+                
+                // Always redirect to role selection after login
+                header('Location: role-selection.php');
+                exit();
+            }
         } else {
             $errors[] = "Invalid username or password.";
         }

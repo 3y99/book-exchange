@@ -1,5 +1,5 @@
 -- Create database
-CREATE DATABASE book_exchange;
+CREATE DATABASE IF NOT EXISTS book_exchange;
 USE book_exchange;
 
 -- Users table (stores all registered users)
@@ -18,10 +18,9 @@ CREATE TABLE users (
     role_selected_at TIMESTAMP NULL,
     is_admin BOOLEAN DEFAULT FALSE,
     user_role ENUM('buyer', 'seller') NULL,
-    rating DECIMAL(3,2) DEFAULT 5.00
+    rating DECIMAL(3,2) DEFAULT 5.00,
+    is_banned BOOLEAN DEFAULT FALSE
 );
-
-
 
 -- Categories table for organizing books
 CREATE TABLE categories (
@@ -97,18 +96,33 @@ CREATE TABLE transactions (
     FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Reviews table - feedback after transactions
+-- Purchases table for simulated purchases
+CREATE TABLE purchases (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    buyer_id INT NOT NULL,
+    seller_id INT NOT NULL,
+    listing_id INT NOT NULL,
+    purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    quantity INT DEFAULT 1,
+    total_price DECIMAL(10,2) NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') DEFAULT 'completed',
+    FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE
+);
+
+-- Reviews table
 CREATE TABLE reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reviewer_id INT NOT NULL,
     reviewee_id INT NOT NULL,
-    transaction_id INT NOT NULL,
+    purchase_id INT NOT NULL,  
     rating INT CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reviewee_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id) ON DELETE CASCADE
 );
 
 -- Watchlist table - users can save listings they like
@@ -132,13 +146,30 @@ CREATE TABLE reports (
     status ENUM('pending', 'reviewed', 'resolved') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     admin_notes TEXT,
+    is_user_notified BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reported_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reported_listing_id) REFERENCES listings(id) ON DELETE CASCADE
 );
 
+-- Admin messages table
+CREATE TABLE admin_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    user_id INT NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    user_response TEXT NULL,
+    responded_at TIMESTAMP NULL,
+    admin_replied_at TIMESTAMP NULL,
+    admin_followup TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
--- Add admin editing capability (we'll track edits)
+-- Book edits table - track admin edits to books
 CREATE TABLE book_edits (
     id INT AUTO_INCREMENT PRIMARY KEY,
     book_id INT NOT NULL,
@@ -149,4 +180,17 @@ CREATE TABLE book_edits (
     FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Cart table for shopping cart functionality
+CREATE TABLE cart (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    listing_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_cart_item (user_id, listing_id)
+);
 
+-- Add index for better performance
+CREATE INDEX idx_admin_messages_user_id ON admin_messages(user_id);
+CREATE INDEX idx_admin_messages_admin_id ON admin_messages(admin_id);

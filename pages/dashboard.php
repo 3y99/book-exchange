@@ -17,6 +17,18 @@ if (!hasSelectedRole()) {
 
 $user_id = $_SESSION['user_id'];
 
+// ✅ NEW CODE — get unread admin responses count
+$stmt = $pdo->prepare("
+    SELECT COUNT(*) 
+    FROM reports 
+    WHERE reporter_id = ? 
+      AND admin_notes IS NOT NULL 
+      AND admin_notes <> '' 
+      AND (is_user_notified = 0 OR is_user_notified IS NULL)
+");
+$stmt->execute([$user_id]);
+$unread_reports = $stmt->fetchColumn();
+
 // Get user stats
 $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM listings WHERE seller_id = ?");
 $stmt->execute([$user_id]);
@@ -26,9 +38,11 @@ $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM listings WHERE seller_id = 
 $stmt->execute([$user_id]);
 $active_listings = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-$stmt = $pdo->prepare("SELECT COUNT(*) as total FROM transactions WHERE buyer_id = ? OR seller_id = ?");
+// Count total transactions from purchases table
+$stmt = $pdo->prepare("SELECT COUNT(*) AS total FROM purchases WHERE buyer_id = ? OR seller_id = ?");
 $stmt->execute([$user_id, $user_id]);
 $total_transactions = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
 
 $stmt = $pdo->prepare("
     SELECT COUNT(*) as total 
@@ -51,22 +65,28 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id]);
 $recent_listings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get recent transactions
+// Get recent transactions (seller’s sold books only, latest first)
 $stmt = $pdo->prepare("
-    SELECT t.*, b.title as listing_title, 
-           buyer.username as buyer_username,
-           seller.username as seller_username
+    SELECT 
+        t.id AS transaction_id,
+        b.title AS listing_title,
+        buyer.username AS buyer_username,
+        seller.username AS seller_username,
+        t.price AS transaction_price,
+        t.status,
+        t.transaction_date,
+        t.buyer_id,
+        t.seller_id
     FROM transactions t
-    JOIN listings l ON t.listing_id = l.id
-    JOIN books b ON l.book_id = b.id
-    JOIN users buyer ON t.buyer_id = buyer.id
-    JOIN users seller ON t.seller_id = seller.id
-    WHERE t.buyer_id = ? OR t.seller_id = ?
+    INNER JOIN listings l ON t.listing_id = l.id
+    INNER JOIN books b ON l.book_id = b.id
+    INNER JOIN users buyer ON t.buyer_id = buyer.id
+    INNER JOIN users seller ON t.seller_id = seller.id
+    WHERE t.seller_id = ?
     ORDER BY t.transaction_date DESC
     LIMIT 5
 ");
-
-$stmt->execute([$user_id, $user_id]);
+$stmt->execute([$user_id]);
 $recent_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -101,15 +121,32 @@ $recent_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <li><a href="dashboard.php" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 
                 <?php if (isSeller()): ?>
-                    <li><a href="listings.php"><i class="fas fa-book"></i> My Listings</a></li>
+                    <li><a href="my-listings.php"><i class="fas fa-book"></i> My Listings</a></li>
                     <li><a href="create-listing.php"><i class="fas fa-plus-circle"></i> Create Listing</a></li>
+                    <li><a href="sales-history.php"><i class="fas fa-dollar-sign"></i> Sales History</a></li>
                 <?php elseif (isBuyer()): ?>
                     <li><a href="listings.php"><i class="fas fa-search"></i> Browse Books</a></li>
-                    <li><a href="listings.php?watchlist=1"><i class="fas fa-heart"></i> My Watchlist</a></li>
-                <?php endif; ?>
+                    <li><a href="watchlist.php"><i class="fas fa-heart"></i> My Watchlist</a></li>
+                    <li><a href="purchase-history.php"><i class="fas fa-heart"></i> Purchase History</a></li>
+                      <li>
+                    <a href="my-reports.php">
+                        <i class="fas fa-flag"></i> My Reports 
+                        <?php if (!empty($unread_reports) && $unread_reports > 0): ?>
+                            <span class="badge" title="New admin response"><?php echo $unread_reports; ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+                <?php endif; ?> 
                 
-                <li><a href="messages.php"><i class="fas fa-envelope"></i> Messages <?php if ($unread_messages > 0): ?><span class="badge"><?php echo $unread_messages; ?></span><?php endif; ?></a></li>
-                <li><a href="my-reports.php"><i class="fas fa-flag"></i> My Reports</a></li>
+                <li>
+                    <a href="messages.php"><i class="fas fa-envelope"></i> Messages 
+                        <?php if ($unread_messages > 0): ?>
+                            <span class="badge"><?php echo $unread_messages; ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+              
+
                 <li><a href="profile.php"><i class="fas fa-user"></i> Profile</a></li>
                 
                 <?php if (isAdmin()): ?>
@@ -220,53 +257,25 @@ $recent_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             <?php endif; ?>
             
-            <?php if (count($recent_transactions) > 0): ?>
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <h2>Recent Transactions</h2>
-                    </div>
-                    
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Listing</th>
-                                    <th>Parties</th>
-                                    <th>Price</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recent_transactions as $transaction): ?>
-                                    <tr>
-                                        <td><?php echo $transaction['listing_title']; ?></td>
-                                        <td>
-                                            <?php if ($transaction['seller_id'] == $user_id): ?>
-                                                Sold to <strong><?php echo $transaction['buyer_username']; ?></strong>
-                                            <?php else: ?>
-                                                Bought from <strong><?php echo $transaction['seller_username']; ?></strong>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td><?php echo formatPrice($transaction['price']); ?></td>
-                                        <td><?php echo date('M j, Y', strtotime($transaction['transaction_date'])); ?></td>
-                                        <td>
-                                            <span class="status-badge status-<?php echo $transaction['status']; ?>">
-                                                <?php echo ucfirst($transaction['status']); ?>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            <?php endif; ?>
+          
+
         </div>
     </div>
 </div>
 
 <style>
+/* ✅ added badge styling */
+.badge {
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 3px 7px;
+    font-size: 0.75rem;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
 .role-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;

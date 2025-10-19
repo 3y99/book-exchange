@@ -36,14 +36,38 @@ ob_start();
                         <!-- Normal logged in user -->
                         <li><a href="<?php echo SITE_URL; ?>/pages/dashboard.php"><i class="fas fa-user"></i> Dashboard</a></li>
                         <li><a href="<?php echo SITE_URL; ?>/pages/messages.php"><i class="fas fa-envelope"></i> Messages</a></li>
+                        
+                        <!-- Admin Messages for buyers and sellers -->
+                        <li>
+                            <a class="nav-link" href="<?php echo SITE_URL; ?>/pages/admin-messages.php">
+                                <i class="fas fa-envelope"></i> Admin Messages
+                                <?php 
+                                $unread_count = getUnreadAdminMessageCount($_SESSION['user_id']);
+                                if ($unread_count > 0): ?>
+                                    <span class="badge badge-warning"><?php echo $unread_count; ?></span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                        
                         <!-- Show AI Support only for users who have selected a role -->
                         <?php if (hasSelectedRole()): ?>
                             <li><a href="<?php echo SITE_URL; ?>/pages/ai-support.php"><i class="fas fa-robot"></i> AI Support</a></li>
                         <?php endif; ?>
-                        <!-- Show Sell tab only for sellers -->
-                        <?php if (isSeller()): ?>
-                            <li><a href="<?php echo SITE_URL; ?>/pages/create-listing.php"><i class="fas fa-plus-circle"></i> Sell</a></li>
+
+                      
+
+                        <!-- Show Cart link only for buyers -->
+                        <?php if (isBuyer() && hasSelectedRole()): ?>
+                            <li>
+                                <a href="<?php echo SITE_URL; ?>/pages/cart.php" class="cart-link">
+                                    <i class="fas fa-shopping-cart"></i> Cart
+                                    <?php if (isset($_SESSION['user_id'])): ?>
+                                        <span class="cart-count"><?php echo getCartCount($_SESSION['user_id']); ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            </li>
                         <?php endif; ?>
+
                         <li><a href="<?php echo SITE_URL; ?>/pages/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                     <?php endif; ?>
                 </ul>
@@ -69,14 +93,38 @@ ob_start();
                 <!-- Normal logged in user -->
                 <li><a href="<?php echo SITE_URL; ?>/pages/dashboard.php"><i class="fas fa-user"></i> Dashboard</a></li>
                 <li><a href="<?php echo SITE_URL; ?>/pages/messages.php"><i class="fas fa-envelope"></i> Messages</a></li>
+
+                <!-- Admin Messages for buyers and sellers in mobile menu -->
+                <li>
+                    <a class="nav-link" href="<?php echo SITE_URL; ?>/pages/admin-messages.php">
+                        <i class="fas fa-envelope"></i> Admin Messages
+                        <?php 
+                        $unread_count = getUnreadAdminMessageCount($_SESSION['user_id']);
+                        if ($unread_count > 0): ?>
+                            <span class="badge badge-warning"><?php echo $unread_count; ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+
                 <!-- Show AI Support only for users who have selected a role -->
                 <?php if (hasSelectedRole()): ?>
                     <li><a href="<?php echo SITE_URL; ?>/pages/ai-support.php"><i class="fas fa-robot"></i> AI Support</a></li>
                 <?php endif; ?>
-                <!-- Show Sell tab only for sellers in mobile menu -->
-                <?php if (isSeller()): ?>
-                    <li><a href="<?php echo SITE_URL; ?>/pages/create-listing.php"><i class="fas fa-plus-circle"></i> Sell</a></li>
+
+               
+
+                <!-- Show Cart link only for buyers in mobile menu -->
+                <?php if (isBuyer() && hasSelectedRole()): ?>
+                    <li>
+                        <a href="<?php echo SITE_URL; ?>/pages/cart.php" class="cart-link">
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <span class="cart-count"><?php echo getCartCount($_SESSION['user_id']); ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
                 <?php endif; ?>
+
                 <li><a href="<?php echo SITE_URL; ?>/pages/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             <?php endif; ?>
         </ul>

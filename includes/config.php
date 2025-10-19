@@ -3,8 +3,8 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'book_exchange');
 define('DB_USER', 'root');
-define('DB_PORT', '3306');
-define('DB_PASS', 'wenman328328@');
+define('DB_PORT', '3310');
+define('DB_PASS', '');
 
 // Site configuration
 define('SITE_NAME', 'CampusBookSwap');
@@ -15,7 +15,7 @@ define('BOOK_IMAGE_PATH', 'assets/images/uploads/books/');
 define('PROFILE_IMAGE_PATH', 'assets/images/uploads/profiles/');
 
 // ChatGPT API Configuration
-define('CHATGPT_API_KEY', 'getenv("OPENAI_API_KEY")';
+define('CHATGPT_API_KEY', getenv("OPENAI_API_KEY"));
 define('CHATGPT_API_URL', 'https://api.openai.com/v1/chat/completions');
 
 // Start session

@@ -58,13 +58,15 @@ Import the SQL file located at database/book_exchange.sql
 4. Configure Database Connection
 Edit config.php:
 
-<?php
+```config.php
+ <?php
 $DB_HOST = 'localhost';
 $DB_USER = 'root';
 $DB_PASS = ''; // Default for XAMPP
 $DB_NAME = 'book_exchange';
 $DB_CHARSET = 'utf8mb4';
 ?>
+```
 
 5. Start the Server
 Open a browser and visit(users): http://localhost/book-exchange/

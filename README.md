@@ -82,3 +82,11 @@ For admin login: http://localhost/book-exchange/admin/login.php
 3. Image compression and cloud storage
 4. Pagination and caching optimization
 5. Improved report/review system
+
+## Contributers
+
+- Tianyu Gao – Database and Security Engineer
+- Yuanhao Wu – Backend (Core Functions) Developer
+- Jingxuan Huang – Frontend Developer (UI/UX)
+- Rongzhi Yang – Messaging and Transactions Developer
+- Man Wen – Admin and System Integration

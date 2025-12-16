@@ -62,11 +62,12 @@ $stmt = $pdo->prepare("
         l.status,
         l.book_id,
         l.created_at,
+        l.description AS listing_description,
         b.title,
         b.author,
         b.isbn,
         b.course_code,
-        b.description,
+        b.description AS book_description,
         b.category_id,
         c.name AS category_name,
         u.id AS seller_user_id,
@@ -225,17 +226,17 @@ $listing_review_count = count($listing_reviews);
                         </div>
                     </div>
 
-                    <?php if ($listing['description']): ?>
+                    <?php if ($listing['book_description']): ?>
                         <div class="detail-group">
                             <h3>Book Description</h3>
-                            <p><?php echo $listing['description']; ?></p>
+                            <p><?php echo $listing['book_description']; ?></p>
                         </div>
                     <?php endif; ?>
 
-                    <?php if ($listing['description']): ?>
+                    <?php if ($listing['listing_description']): ?>
                         <div class="detail-group">
                             <h3>Seller Notes</h3>
-                            <p><?php echo $listing['description']; ?></p>
+                            <p><?php echo $listing['listing_description']; ?></p>
                         </div>
                     <?php endif; ?>
                 </div>
